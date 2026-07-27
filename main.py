@@ -108,7 +108,7 @@ templates = Jinja2Templates(directory="templates")
 # --- Routes ---
 @app.get("/", response_class=HTMLResponse)
 async def get_dashboard(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+    return templates.TemplateResponse(request=request, name="index.html")
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
