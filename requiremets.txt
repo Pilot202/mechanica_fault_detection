@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+paho-mqtt
+scikit-learn 
+joblib 
+websockets 
+jinja2

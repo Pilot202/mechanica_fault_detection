@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Predictive Maintenance Dashboard</title>
+    <!-- Chart.js for visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+        }
+
+        .cards {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            flex: 1;
+            text-align: center;
+        }
+
+        .card h3 {
+            margin-top: 0;
+            color: #666;
+            font-size: 1rem;
+            text-transform: uppercase;
+        }
+
+        .card .value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        /* Color-coded indicators */
+        #status-card {
+            transition: background-color 0.3s ease;
+            color: white;
+        }
+
+        #status-card h3 {
+            color: white;
+            opacity: 0.9;
+        }
+
+        #status-value {
+            color: white;
+        }
+
+        .chart-container {
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Industrial Motor Diagnostics</h1>
+            <p>Real-time IoT Vibration Analysis</p>
+        </div>
+
+        <div class="cards">
+            <div class="card" id="status-card" style="background-color: #7f8c8d;">
+                <h3>Health Status</h3>
+                <div class="value" id="status-value">Waiting for data...</div>
+                <div style="margin-top: 10px; font-size: 0.9rem;">Confidence: <span id="confidence-value">--</span>
+                </div>
+            </div>
+            <div class="card">
+                <h3>Vibration Energy (RMS)</h3>
+                <div class="value" id="rms-value">--</div>
+            </div>
+            <div class="card">
+                <h3>Peak Frequency</h3>
+                <div class="value" id="freq-value">-- Hz</div>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <canvas id="vibrationChart" height="100"></canvas>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Chart.js
+        const ctx = document.getElementById('vibrationChart').getContext('2d');
+        const chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'RMS (Vibration Energy)',
+                    borderColor: '#3498db',
+                    backgroundColor: 'rgba(52, 152, 219, 0.2)',
+                    data: [],
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: { display: false }, // Hide X axis labels for clean streaming look
+                    y: { beginAtZero: true, suggestedMax: 3 }
+                },
+                animation: { duration: 0 }
+            }
+        });
+
+        const maxDataPoints = 50;
+
+        // Connect to FastAPI WebSocket
+        const protocol = window.location.protocol === "https:" ? "wss" : "ws";
+        const ws = new WebSocket(`${protocol}://${window.location.host}/ws`);
+
+        ws.onmessage = function (event) {
+            const data = JSON.parse(event.data);
+
+            // Update Metric Cards
+            document.getElementById('status-value').innerText = data.status;
+            document.getElementById('confidence-value').innerText = data.confidence;
+            document.getElementById('rms-value').innerText = parseFloat(data.rms).toFixed(3);
+            document.getElementById('freq-value').innerText = parseFloat(data.peak_freq).toFixed(1) + ' Hz';
+
+            // Update color-coded status card
+            document.getElementById('status-card').style.backgroundColor = data.color;
+
+            // Update Chart
+            const timestamp = new Date().toLocaleTimeString();
+            chart.data.labels.push(timestamp);
+            chart.data.datasets[0].data.push(data.rms);
+
+            if (chart.data.labels.length > maxDataPoints) {
+                chart.data.labels.shift();
+                chart.data.datasets[0].data.shift();
+            }
+            chart.update();
+        };
+
+        ws.onclose = function (event) {
+            console.error("WebSocket closed. Reconnecting...");
+            setTimeout(() => { window.location.reload(); }, 2000);
+        };
+    </script>
+</body>
+
+</html>
