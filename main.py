@@ -13,7 +13,7 @@ import asyncio
 MQTT_BROKER = "broker.hivemq.com"
 MQTT_PORT = 1883
 MQTT_TOPIC = "motor/features/vibration"
-MODEL_PATH = "/random_forest_motor_model.pkl"
+MODEL_PATH = "random_forest_motor_model.pkl"
 
 try:
     model = joblib.load(MODEL_PATH)
