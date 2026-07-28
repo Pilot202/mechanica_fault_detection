@@ -13,7 +13,7 @@ import asyncio
 MQTT_BROKER = "broker.hivemq.com"
 MQTT_PORT = 1883
 MQTT_TOPIC = "motor/features/x_axis"
-MODEL_PATH = "C:/Users/USER/Downloads/fault_detection_system/random_forest_motor_model.pkl"
+MODEL_PATH = "/random_forest_motor_model.pkl"
 
 # Load the trained Random Forest classifier
 try:
