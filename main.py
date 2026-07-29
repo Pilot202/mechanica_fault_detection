@@ -24,10 +24,7 @@ from contextlib import asynccontextmanager
 MQTT_BROKER = "broker.hivemq.com"
 MQTT_PORT = 1883
 MQTT_TOPIC = "motor/features/vibration"
-
-# Relative path — must match a file actually committed to your repo,
-# sitting in the same folder as this script (or adjust the path below).
-MODEL_PATH = "random_forest_motor_modelnew1.pkl"
+MODEL_PATH = "random_forest_motor_model.pkl"
 
 # --- Load the trained model ---
 try:
@@ -173,6 +170,16 @@ async def websocket_endpoint(websocket: WebSocket):
             await websocket.receive_text()
     except WebSocketDisconnect:
         manager.disconnect(websocket)
+
+
+# --- Optional: simple health check, useful for confirming the service is up ---
+@app.get("/health")
+async def health_check():
+    return {
+        "status": "ok",
+        "model_loaded": model is not None,
+        "connected_dashboard_clients": len(manager.active_connections),
+    }
 
 
 # --- Optional: simple health check, useful for confirming the service is up ---
