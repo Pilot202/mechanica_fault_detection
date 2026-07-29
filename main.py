@@ -24,7 +24,7 @@ from contextlib import asynccontextmanager
 MQTT_BROKER = "broker.hivemq.com"
 MQTT_PORT = 1883
 MQTT_TOPIC = "motor/features/vibration"
-MODEL_PATH = "random_forest_motor_model.pkl"
+MODEL_PATH = "random_forest_motor_modelnew1.pkl"
 
 # --- Load the trained model ---
 try:
